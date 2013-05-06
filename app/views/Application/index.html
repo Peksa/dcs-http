@@ -1,4 +1,141 @@
-#{extends 'main.html' /}
-#{set title:'Home' /}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DCS Peksa</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body, #map-canvas {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-size: 8pt;
+        font-family: Arial, Helvetica;
+        font-weight: bold;
+      }
+      
+      .label {
+        width: 100px;
+        text-align: center;
+      }
+      .red {
+      	color: red;
+      }
+      
+      .blue {
+      	color: blue;
+      }
+      
+    </style>
+    <script src="/public/javascripts/jquery-1.6.4.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="/public/javascripts/markerwithlabel.js"></script>
+    <script>
+    
+var map;
+var markers = {};
 
-#{welcome /}
+
+function initialize() {
+  var mapOptions = {
+    zoom: 7,
+    center: new google.maps.LatLng(43.80, 42.43),
+    mapTypeId: google.maps.MapTypeId.ROADMAP 
+  };
+  map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+}
+var first = true;
+
+function loadObjects() {
+	$.get('/api/objects', refreshWithoutLabel);
+}
+
+function refreshActiveObjects() {
+	$.get('/api/activeobjects', refreshWithLabel);
+	setTimeout(refreshActiveObjects, 500);
+}
+
+function refreshWithLabel(data) {
+	refreshMap(data, true);
+}
+
+function refreshWithoutLabel(data) {
+	refreshMap(data, false);
+}
+
+function refreshMap(data, labels) {
+   var first = true;
+   for (var key in data) {
+	  var plane = data[key];
+      var m = markers[plane.id];
+      var color = '#000000';
+      if (/Allies/.test(plane.country)) {
+   		  styleClass = ' red';
+    	  color = '#ff0000';
+      }
+      if (/Enemies/.test(plane.country)) {
+    	  color = '#0000ff';
+      	  styleClass = ' blue';
+      }
+      
+      
+      if (!m) {
+    	  if (labels) {
+    		  var beachMarker = new MarkerWithLabel({
+    	          position: new google.maps.LatLng(plane.lat, plane.lon),
+    	          map: map,
+    	          labelContent: plane.name + " (" + plane.type + ")",
+    	          labelAnchor: new google.maps.Point(50, 0),
+    	          labelClass: 'label' + styleClass,
+    	          icon: {
+    	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+    			    scale: 2,
+    			    strokeColor: color,
+    			    rotation: plane.heading*180/Math.PI
+    			  }    
+    		  }); 
+    	  } else {
+    		  var beachMarker = new google.maps.Marker({
+    	          position: new google.maps.LatLng(plane.lat, plane.lon),
+    	          map: map,
+    	          icon: {
+    	            path: google.maps.SymbolPath.CIRCLE,
+    			    scale: 2,
+    			    strokeColor: color,
+    			  }    
+    		  }); 
+    	  }
+    	  
+    	  markers[plane.id] = beachMarker;
+      } else {
+   		  m.setIcon({
+   	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+   			    scale: 2,
+   			    strokeColor: color,
+   			    rotation: plane.heading*180/Math.PI
+   	      });
+    	  m.setPosition(new google.maps.LatLng(plane.lat, plane.lon));
+    	  
+      }
+      if (first) {
+    	  map.center = new google.maps.LatLng(plane.lat, plane.lon);
+      }
+      first = false;
+   }
+	
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
+refreshActiveObjects()
+setTimeout(loadObjects(), 1000);
+
+
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
