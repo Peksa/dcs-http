@@ -8,17 +8,18 @@ public class DcsObject
 	public double lat;
 	public double lon;
 	public double heading;
+	public double alt;
 	public String country;
 	public String type;
 	public String groupName;
+	
+	
 	@Override
 	public String toString()
 	{
 		return "DcsObject [id=" + id + ", time=" + time + ", name=" + name
 				+ ", lat=" + lat + ", lon=" + lon + ", heading=" + heading
-				+ ", country=" + country + ", type=" + type + ", groupName="
-				+ groupName + "]";
+				+ ", alt=" + alt + ", country=" + country + ", type="
+				+ type + ", groupName=" + groupName + "]";
 	}
-	
-	
 }

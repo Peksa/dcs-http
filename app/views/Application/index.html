@@ -15,7 +15,7 @@
       }
       
       .label {
-        width: 100px;
+        width: 120px;
         text-align: center;
       }
       .red {
@@ -27,7 +27,7 @@
       }
       
     </style>
-    <script src="/public/javascripts/jquery-1.6.4.min.js"></script>
+    <script src="/public/javascripts/jquery-1.9.1.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script src="/public/javascripts/markerwithlabel.js"></script>
     <script>
@@ -38,12 +38,13 @@ var markers = {};
 
 function initialize() {
   var mapOptions = {
-    zoom: 7,
+    zoom: 11,
     center: new google.maps.LatLng(43.80, 42.43),
-    mapTypeId: google.maps.MapTypeId.ROADMAP 
+    mapTypeId: google.maps.MapTypeId.TERRAIN 
   };
-  map = new google.maps.Map(document.getElementById('map-canvas'),
-      mapOptions);
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+  refreshActiveObjects();
+  setTimeout(loadObjects(), 1000);
 }
 var first = true;
 
@@ -53,7 +54,7 @@ function loadObjects() {
 
 function refreshActiveObjects() {
 	$.get('/api/activeobjects', refreshWithLabel);
-	setTimeout(refreshActiveObjects, 500);
+	setTimeout(refreshActiveObjects, 1000);
 }
 
 function refreshWithLabel(data) {
@@ -65,7 +66,6 @@ function refreshWithoutLabel(data) {
 }
 
 function refreshMap(data, labels) {
-   var first = true;
    for (var key in data) {
 	  var plane = data[key];
       var m = markers[plane.id];
@@ -79,22 +79,25 @@ function refreshMap(data, labels) {
       	  styleClass = ' blue';
       }
       
+      var angels = Math.round((plane.alt*3.28084)/1000);
+      
       
       if (!m) {
     	  if (labels) {
     		  var beachMarker = new MarkerWithLabel({
     	          position: new google.maps.LatLng(plane.lat, plane.lon),
     	          map: map,
-    	          labelContent: plane.name + " (" + plane.type + ")",
-    	          labelAnchor: new google.maps.Point(50, 0),
+    	          labelContent: plane.name + "<br>(" + plane.type + ")<br>" + angels,
+    	          labelAnchor: new google.maps.Point(60, -10),
     	          labelClass: 'label' + styleClass,
     	          icon: {
     	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
     			    scale: 2,
     			    strokeColor: color,
+    			    fillColor: color,
     			    rotation: plane.heading*180/Math.PI
-    			  }    
-    		  }); 
+    			  }
+    		  });
     	  } else {
     		  var beachMarker = new google.maps.Marker({
     	          position: new google.maps.LatLng(plane.lat, plane.lon),
@@ -102,7 +105,7 @@ function refreshMap(data, labels) {
     	          icon: {
     	            path: google.maps.SymbolPath.CIRCLE,
     			    scale: 2,
-    			    strokeColor: color,
+    			    strokeColor: color
     			  }    
     		  }); 
     	  }
@@ -113,24 +116,21 @@ function refreshMap(data, labels) {
    	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
    			    scale: 2,
    			    strokeColor: color,
+   			    fillColor: color,
    			    rotation: plane.heading*180/Math.PI
    	      });
     	  m.setPosition(new google.maps.LatLng(plane.lat, plane.lon));
     	  
       }
-      if (first) {
-    	  map.center = new google.maps.LatLng(plane.lat, plane.lon);
+      if (first && labels) {
+    	  map.setCenter(new google.maps.LatLng(plane.lat, plane.lon));
+    	  first = false;
       }
-      first = false;
    }
 	
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
-
-
-refreshActiveObjects()
-setTimeout(loadObjects(), 1000);
 
 
     </script>

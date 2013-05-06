@@ -96,10 +96,11 @@ public class DcsSocket implements Runnable
 			ret.type = tokens[2];
 			ret.lat = Double.parseDouble(tokens[3]);
 			ret.lon = Double.parseDouble(tokens[4]);
-			ret.heading = Double.parseDouble(tokens[5]);
-			ret.country = tokens[6];
-			ret.name = tokens[7];
-			ret.groupName = tokens[8];
+			ret.alt = Double.parseDouble(tokens[5]);
+			ret.heading = Double.parseDouble(tokens[6]);
+			ret.country = tokens[7];
+			ret.name = tokens[8];
+			ret.groupName = tokens[9];
 			return ret;
 		} catch (Exception e) { 
 			return null;
