@@ -2,3 +2,5 @@
 /lib
 /.settings
 /tmp
+/.classpath
+/.project
