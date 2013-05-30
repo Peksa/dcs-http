@@ -8,12 +8,8 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-
-import play.jobs.Job;
-import play.jobs.OnApplicationStart;
-
 import models.DcsObject;
+import play.Logger;
 
 
 public class DcsSocket implements Runnable
@@ -26,7 +22,6 @@ public class DcsSocket implements Runnable
 	public static ConcurrentMap<Long, DcsObject> oldObjects = new ConcurrentHashMap<>();
 	public static ConcurrentMap<Long, DcsObject> activeObjects = new ConcurrentHashMap<>();
 	
-	
 	@Override
 	public void run()
 	{
@@ -36,13 +31,14 @@ public class DcsSocket implements Runnable
 			try {
 			    serverSocket = new ServerSocket(9595);
 			    
-			    System.out.println("Waiting for connection");
+			    Logger.info("Waiting for connection by DCS on: %s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort());
 			    clientSocket = serverSocket.accept();
-			    System.out.println("Got connection!");
+			    Logger.info("Got connection from DCS %s:%d", clientSocket.getInetAddress().getHostAddress(), clientSocket.getPort());
 			    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			    String inputLine;
 	
-			    while ((inputLine = in.readLine()) != null) {   
+			    while ((inputLine = in.readLine()) != null)
+			    {   
 			    	DcsObject obj = parseDcsObject(inputLine);
 			    	if (obj == null)
 			    		continue;
@@ -59,7 +55,10 @@ public class DcsSocket implements Runnable
 			    }
 			} 
 			catch (IOException e) {
-			    e.printStackTrace();
+				Logger.error(e, "Connection error");
+				if (serverSocket == null) {
+					break;
+				}
 			} finally {
 				try {
 					if (serverSocket != null)
@@ -72,6 +71,8 @@ public class DcsSocket implements Runnable
 				}
 				catch (IOException e) { }
 				objects.clear();
+				activeObjects.clear();
+				oldObjects.clear();
 			}
 		}
 	}

@@ -1,14 +1,15 @@
 # Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
 
-# Home page
-GET     /                                       Application.index
-GET		/api/objects							Application.allObjects
-GET		/api/activeobjects						Application.activeObjects
+# API
+GET		/api/objects							API.allObjects
+GET		/api/activeobjects						API.activeObjects
 
 
-# Ignore favicon requests
+# Example clients
+GET     /maps                                   Examples.maps
+
+
+
 GET     /favicon.ico                            404
 
 # Map static resources from the /app/public folder to the /public path

@@ -2,15 +2,15 @@ package util;
 
 import play.jobs.Job;
 import play.jobs.OnApplicationStart;
-import play.jobs.OnApplicationStop;
 
-
-@OnApplicationStop
+@OnApplicationStart
 public class InitJob extends Job
 {
 	@Override
 	public void doJob()
 	{
-		DcsSocket.stop = true;
+		System.setProperty("java.net.preferIPv4Stack", "true");
+		DcsSocket socket = new DcsSocket();
+		new Thread(socket).start();
 	}
 }

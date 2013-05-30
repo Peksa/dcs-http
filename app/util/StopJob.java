@@ -1,16 +1,15 @@
 package util;
 
 import play.jobs.Job;
-import play.jobs.OnApplicationStart;
+import play.jobs.OnApplicationStop;
 
 
-@OnApplicationStart
+@OnApplicationStop
 public class StopJob extends Job
 {
 	@Override
 	public void doJob()
 	{
-		DcsSocket socket = new DcsSocket();
-		new Thread(socket).start();
+		DcsSocket.stop = true;
 	}
 }
