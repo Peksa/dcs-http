@@ -55,7 +55,7 @@ This is a small web page that uses JavaScript to fetch the positions of all obje
 
 How it works
 ------------
-DCS World allows you to run Lua code in order to export data out of the simulator. Lua is used in order to establish a socket to the Play application, where data is then streamed. The data is cached in memory in order to effeciently serve HTTP requests to clients.
+DCS World allows you to run Lua code in order to export data out of the simulator. Lua is used in order to establish a socket to the Play application, where data is then streamed. The data is cached in memory in order to efficiently serve HTTP requests to clients.
 ```
 23:39:53,945 INFO  ~ Starting C:\Users\Peksa\git\dcs-http
 23:39:54,018 INFO  ~ Precompiling ...
