@@ -6,7 +6,7 @@ public class DcsPlayer extends DcsEntity
 	
 	public DcsPlayer()
 	{
-		this.type = "P";
+		this.entity = "P";
 	}
 	
 	public static DcsPlayer parse(String input)
@@ -14,7 +14,8 @@ public class DcsPlayer extends DcsEntity
 		try {
 			String[] tokens = input.split("\t");
 			DcsPlayer ret = new DcsPlayer();
-			ret.name = tokens[1];
+			ret.time = Double.parseDouble(tokens[1]);
+			ret.name = tokens[2];
 			return ret;
 		} catch (Exception e) { 
 			return null;

@@ -3,7 +3,6 @@ package models;
 public class DcsObject extends DcsEntity
 {
 	public long id;
-	public double time;
 	public String name;
 	public double lat;
 	public double lon;
@@ -15,7 +14,7 @@ public class DcsObject extends DcsEntity
 	
 	public DcsObject()
 	{
-		this.type = "O";
+		this.entity = "O";
 	}
 	
 	

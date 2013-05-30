@@ -1,6 +1,8 @@
 package db;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -14,7 +16,11 @@ public class DB
 	private static ConcurrentMap<Long, DcsObject> oldObjects = new ConcurrentHashMap<>();
 	private static ConcurrentMap<Long, DcsObject> activeObjects = new ConcurrentHashMap<>();
 	
+	private static List<DcsPlayer> players = new ArrayList<>();
+	
 	private static double latestObjectTime = -1L;
+	private static double latestPlayerTime = -1L;
+	
 	
 	public static Collection<DcsObject> getObjects()
 	{
@@ -24,6 +30,11 @@ public class DB
 	public static Collection<DcsObject> getActiveObjects()
 	{
 		return activeObjects.values();
+	}
+
+	public static Collection<DcsPlayer> getPlayers()
+	{
+		return players;
 	}
 
 	private static boolean isActive(DcsObject obj)
@@ -46,7 +57,14 @@ public class DB
 	
 	public static void updatePlayer(DcsPlayer player)
 	{
-		
+		if (player == null)
+    		return;
+    	if (player.time > latestPlayerTime)
+    	{
+    		players = new ArrayList<>();
+    		latestPlayerTime = player.time;
+    	}
+    	players.add(player);
 	}
 
 	public static void updateObject(DcsObject object)
@@ -65,18 +83,13 @@ public class DB
     		activeObjects.put(object.id, object);
 		
 	}
-
-	public static Collection<DcsPlayer> getPlayers()
-	{
-		return null;
-	}
-	
 	
 	public static void clear()
 	{
 		objects.clear();
 		activeObjects.clear();
 		oldObjects.clear();
+		players.clear();
 	}
 	
 }

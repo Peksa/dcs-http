@@ -2,10 +2,11 @@ package models;
 
 public abstract class DcsEntity
 {
-	protected String type;
+	protected String entity;
+	public double time;
 	
-	public String getType() 
+	public String getEntity() 
 	{
-		return type;
+		return entity;
 	}
 }
