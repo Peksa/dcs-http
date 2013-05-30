@@ -75,7 +75,7 @@ Run it yourself
 If you'd like to run the application yourself, you're welcome to do so.
 
 1. Install [DCS World](https://www.digitalcombatsimulator.com/en/world/).
-2. Copy `Export.lua` from the root of this repo to `%HOME%/Saved Games/DCS/Scripts`
+2. Copy `lua/Export.lua` from the root of this repo to `%HOME%/Saved Games/DCS/Scripts`
 3. Install JDK 7
 4. Install Play framework 1.x. Instructions [here](http://www.playframework.org/documentation/1.2.5/install).
 5. Clone this repo, `git clone git://github.com/Peksa/dcs-http.git`
