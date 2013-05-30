@@ -8,6 +8,9 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import db.DB;
+
+import models.DcsEntity;
 import models.DcsObject;
 import play.Logger;
 
@@ -15,12 +18,8 @@ import play.Logger;
 public class DcsSocket implements Runnable
 {
 	private static ServerSocket serverSocket;
-	private static double latestTime = -1L;
 	public static boolean stop = false;
-	
-	public static ConcurrentMap<Long, DcsObject> objects = new ConcurrentHashMap<>();
-	public static ConcurrentMap<Long, DcsObject> oldObjects = new ConcurrentHashMap<>();
-	public static ConcurrentMap<Long, DcsObject> activeObjects = new ConcurrentHashMap<>();
+	private static final int DCS_PORT = 9595;
 	
 	@Override
 	public void run()
@@ -29,7 +28,7 @@ public class DcsSocket implements Runnable
 		{
 			Socket clientSocket = null;
 			try {
-			    serverSocket = new ServerSocket(9595);
+			    serverSocket = new ServerSocket(DCS_PORT);
 			    
 			    Logger.info("Waiting for connection by DCS on: %s:%d", serverSocket.getInetAddress().getHostAddress(), serverSocket.getLocalPort());
 			    clientSocket = serverSocket.accept();
@@ -39,72 +38,43 @@ public class DcsSocket implements Runnable
 	
 			    while ((inputLine = in.readLine()) != null)
 			    {   
-			    	DcsObject obj = parseDcsObject(inputLine);
-			    	if (obj == null)
-			    		continue;
-			    	if (obj.time > latestTime)
-			    	{
-			    		oldObjects = objects;
-			    		objects = new ConcurrentHashMap<>();
-			    		activeObjects.clear();
-			    		latestTime = obj.time;
-			    	}
-			    	objects.put(obj.id, obj);
-			    	if (isActive(obj))
-			    		activeObjects.put(obj.id, obj);
+			    	DcsEntity entity = DcsParser.parse(inputLine);
+			    	DB.updateEntity(entity);
 			    }
 			} 
 			catch (IOException e) {
 				Logger.error(e, "Connection error");
-				if (serverSocket == null) {
+				if (serverSocket == null)
+				{
+					Logger.error("Unable to listen on port %s", DCS_PORT);
 					break;
 				}
 			} finally {
-				try {
-					if (serverSocket != null)
-						serverSocket.close();
-				}
-				catch (IOException e) {}
-				try {
-					if (clientSocket != null)
-						clientSocket.close();
-				}
-				catch (IOException e) { }
-				objects.clear();
-				activeObjects.clear();
-				oldObjects.clear();
+				cleanup(serverSocket, clientSocket);
+				DB.clear();
 			}
 		}
 	}
 
-	private boolean isActive(DcsObject obj)
+	private void cleanup(ServerSocket serverSocket2, Socket clientSocket)
 	{
-		DcsObject old = oldObjects.get(obj.id);
-		if (old == null)
-			return false;
-		if (obj.heading != old.heading || obj.lat != old.lat || obj.lon != old.lon)
-			return true;
-		return false;
-	}
-
-	private static DcsObject parseDcsObject(String inputLine)
-	{
-		try {
-			String[] tokens = inputLine.split("\t");
-			DcsObject ret = new DcsObject();
-			ret.time = Double.parseDouble(tokens[0]);
-			ret.id = Long.parseLong(tokens[1]);
-			ret.type = tokens[2];
-			ret.lat = Double.parseDouble(tokens[3]);
-			ret.lon = Double.parseDouble(tokens[4]);
-			ret.alt = Double.parseDouble(tokens[5]);
-			ret.heading = Double.parseDouble(tokens[6]);
-			ret.country = tokens[7];
-			ret.name = tokens[8];
-			ret.groupName = tokens[9];
-			return ret;
-		} catch (Exception e) { 
-			return null;
+		if (serverSocket != null)
+		{
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// ignore
+			}
+			
+		}
+			
+		if (clientSocket != null)
+		{
+			try {
+				clientSocket.close();
+			} catch (IOException e) {
+				// ignore
+			}
 		}
 	}
 }

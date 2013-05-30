@@ -1,10 +1,13 @@
 package controllers;
 
 import play.mvc.Controller;
+import play.mvc.Util;
 import util.DcsSocket;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import db.DB;
 
 public class API extends Controller
 {
@@ -12,11 +15,22 @@ public class API extends Controller
     
     public static void allObjects()
     {
-    	renderJSON(gson.toJson(DcsSocket.objects.values()));
+    	prettyJSON(DB.getObjects());
     }
     
     public static void activeObjects()
     {
-    	renderJSON(gson.toJson(DcsSocket.activeObjects.values()));
+    	prettyJSON(DB.getActiveObjects());
     }
+    
+    public static void players()
+    {
+    	prettyJSON(DB.getPlayers());
+    }
+    
+    @Util
+	private static void prettyJSON(Object json)
+	{
+		renderJSON(gson.toJson(json));
+	}
 }
