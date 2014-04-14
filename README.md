@@ -4,6 +4,14 @@ dcs-http
 dcs-http is a [Play! framework 1.x](http://www.playframework.org/) application that exposes a small JSON
 HTTP API with data from a [DCS World](https://www.digitalcombatsimulator.com/en/world/) client.
 
+
+Demo
+----
+Here's a demo what you can build with this!
+
+![](https://raw.github.com/peksa/dcs-http/master/screenshot.png)
+
+
 Features
 --------
 The API currently exposes two endpoints:
