@@ -1,44 +1,86 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>DCS Peksa</title>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8">
-    <style>
-      html, body, #map-canvas {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-size: 8pt;
-        font-family: Arial, Helvetica;
-        font-weight: bold;
-      }
-      
-      .label {
-        width: 120px;
-        text-align: center;
-      }
-      .red {
-      	color: red;
-      }
-      
-      .blue {
-      	color: blue;
-      }
-      
-    </style>
-    <script src="/public/javascripts/jquery-1.9.1.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script src="/public/javascripts/markerwithlabel.js"></script>
-    <script>
-    
+<head>
+<title>DCS Maps Demo</title>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<style>
+html, body, #map-canvas {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-size: 8pt;
+    font-family: Arial, Helvetica;
+    font-weight: bold;
+}
+
+.label {
+    width: 120px;
+    text-align: center;
+}
+.red {
+    color: red;
+}
+
+.blue {
+    color: blue;
+}
+
+.map-marker-label{
+    position: absolute;
+    color: blue;
+    font-size: 12px;
+    text-align: center;
+    width: 120px;
+    height: 120px;
+}
+
+</style>
+<script src="/public/javascripts/jquery-1.9.1.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<script>
+
 var map;
 var markers = {};
 
+var point = { lat: 22.5667, lng: 88.3667 };
+var markerSize = { x: 22, y: 40 };
+
+google.maps.Marker.prototype.setLabel = function(label){
+    this.label = new MarkerLabel({
+        map: this.map,
+        marker: this,
+        text: label
+    });
+    this.label.bindTo('position', this, 'position');
+};
+
+var MarkerLabel = function(options) {
+    this.setValues(options);
+    this.span = document.createElement('span');
+    this.span.className = 'map-marker-label';
+};
+
+MarkerLabel.prototype = $.extend(new google.maps.OverlayView(), {
+    onAdd: function() {
+        this.getPanes().overlayImage.appendChild(this.span);
+        var self = this;
+        this.listeners = [
+            google.maps.event.addListener(this, 'position_changed', function() { self.draw();
+        })];
+    },
+    draw: function() {
+        var text = String(this.get('text'));
+        var position = this.getProjection().fromLatLngToDivPixel(this.get('position'));
+        this.span.innerHTML = text;
+        this.span.style.left = (position.x - (markerSize.x / 2)) - (text.length * 3) + 10 + 'px';
+        this.span.style.top = (position.y - markerSize.y + 40) + 'px';
+    }
+});
 
 function initialize() {
   var mapOptions = {
-    zoom: 11,
+    zoom: 9,
     center: new google.maps.LatLng(43.80, 42.43),
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
@@ -54,7 +96,7 @@ function loadObjects() {
 
 function refreshActiveObjects() {
 	$.get('/api/activeobjects', refreshWithLabel);
-	setTimeout(refreshActiveObjects, 1000);
+	setTimeout(refreshActiveObjects, 500);
 }
 
 function refreshWithLabel(data) {
@@ -81,23 +123,24 @@ function refreshMap(data, labels) {
       
       var angels = Math.round((plane.alt*3.28084)/1000);
       
-      
       if (!m) {
     	  if (labels) {
-    		  var beachMarker = new MarkerWithLabel({
+              console.log(new google.maps.LatLng(plane.lat, plane.lon));
+
+    		  var beachMarker = new google.maps.Marker({
     	          position: new google.maps.LatLng(plane.lat, plane.lon),
     	          map: map,
-    	          labelContent: plane.name + "<br>(" + plane.type + ")<br>" + angels,
-    	          labelAnchor: new google.maps.Point(60, -10),
-    	          labelClass: 'label' + styleClass,
+                  label: plane.name + "<br>(" + plane.type + ")<br>" + angels,
+                  draggable: false,
     	          icon: {
     	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-    			    scale: 2,
+    			    scale: 3,
     			    strokeColor: color,
     			    fillColor: color,
     			    rotation: plane.heading*180/Math.PI
     			  }
     		  });
+              beachMarker.setMap(map);
     	  } else {
     		  var beachMarker = new google.maps.Marker({
     	          position: new google.maps.LatLng(plane.lat, plane.lon),
@@ -114,11 +157,12 @@ function refreshMap(data, labels) {
       } else {
    		  m.setIcon({
    	            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-   			    scale: 2,
+   			    scale: 3,
    			    strokeColor: color,
    			    fillColor: color,
    			    rotation: plane.heading*180/Math.PI
    	      });
+
     	  m.setPosition(new google.maps.LatLng(plane.lat, plane.lon));
     	  
       }
@@ -133,9 +177,9 @@ function refreshMap(data, labels) {
 google.maps.event.addDomListener(window, 'load', initialize);
 
 
-    </script>
-  </head>
-  <body>
-    <div id="map-canvas"></div>
-  </body>
+</script>
+</head>
+<body>
+<div id="map-canvas"></div>
+</body>
 </html>
